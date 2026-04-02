@@ -48,6 +48,12 @@
     
     
     NSLog(@"Test123");
+    
+    NSString *a = nil;
+    if (a == nil) {
+        NSLog(@"There is an error");
+    }
+        
     return self;
 }
 
