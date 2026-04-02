@@ -44,6 +44,10 @@
         
         _msidClaimsRequest = [MSIDClaimsRequest new];
     }
+    
+    
+    
+    NSLog(@"Test123");
     return self;
 }
 
