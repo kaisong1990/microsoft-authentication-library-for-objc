@@ -35,7 +35,7 @@
 - Feature flag gating: [`.clinerules/05-feature-gating.md`](../.clinerules/05-feature-gating.md)
 - Agent onboarding: [`.clinerules/AGENTS.md`](../.clinerules/AGENTS.md)
 
---------------------------------------------------------------------------------
+---
 
 ## 1. Critical Rules (Read First)
 
@@ -216,14 +216,63 @@ Reference example:
 
 ## 6. Build and Validation Instructions
 
-The repository uses a Python script `build.py` to manage build and test operations.
+### Forbidden Patterns
 
 ### Prerequisites
 1. **Submodules:** `git submodule update --init --recursive`
 2. **Xcode:** 15+ (CI uses Xcode 16.2).
 3. **Tools:** `xcpretty` (optional, recommended for readable logs), `swiftlint` (native auth).
 
-### Build Commands
+### Error Handling
+
+```objc
+// CORRECT: check return value
+BOOL success = [object doSomethingWithError:&error];
+if (!success) { /* handle */ }
+
+// WRONG: check error variable directly
+[object doSomethingWithError:&error];
+if (error) { /* unreliable — do not do this */ }
+```
+
+### Platform Guards
+
+```objc
+#if TARGET_OS_IPHONE
+    // iOS/visionOS-only code
+#elif TARGET_OS_OSX
+    // macOS-only code
+#endif
+```
+
+---
+
+## 4. High Level Details
+
+- **Type**: iOS/macOS SDK (Framework)
+- **Languages**: Objective-C (Core), Swift (Native Auth, Tests)
+- **Platforms**: iOS 16+, macOS 11+, visionOS 1.2+
+- **Build System**: Xcode (`xcodebuild`) wrapped by `build.py`
+- **Workspace**: `MSAL.xcworkspace` — always open this, **never** the `.xcodeproj` directly
+- **Dependencies**: `IdentityCore` (Git Submodule), `xcpretty` (optional)
+
+---
+
+## 5. Code Style
+
+**CRITICAL**: Always adhere to `.clinerules/04-Code-style-guidelines.md`.
+
+- 4-space indentation (never tabs)
+- Opening braces on a **new line**
+- Do NOT group or sort `#import` statements
+- Check **return values**, not error variables
+- Use `@property` declarations; avoid raw instance variables
+- `MSAL` prefix for public API classes; `MSID` prefix for IdentityCore internals
+- SwiftLint applies to `MSAL/src/native_auth/` (max line length: 150)
+
+---
+
+## 6. Build and Validation
 
 ```bash
 ./build.py                                # all targets
@@ -235,7 +284,7 @@ The repository uses a Python script `build.py` to manage build and test operatio
 
 Available targets: `iosFramework`, `macFramework`, `visionOSFramework`, `iosTestApp`, `sampleIosApp`, `sampleIosAppSwift`.
 
-### Test Commands
+Available targets: `iosFramework`, `macFramework`, `visionOSFramework`, `iosTestApp`, `sampleIosApp`, `sampleIosAppSwift`.
 
 ```bash
 ./build.py --targets iosFramework   # iOS unit tests
